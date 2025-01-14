@@ -7,31 +7,34 @@
 
 class ChainSimulator : public FreeFermionSimulator {
   private:
-    double dt;
     double p1;
     double p2;
+    double beta;
 
     bool do_measurements;
 
     int coupling_type;
 
   public:
-    ChainSimulator(dataframe::Params& params, uint32_t num_threads) : FreeFermionSimulator(params) {
-      dt = dataframe::utils::get<double>(params, "dt");
+    ChainSimulator(dataframe::Params& params, uint32_t num_threads) : FreeFermionSimulator(params, num_threads) {
       p1 = dataframe::utils::get<double>(params, "p1", 0.0);
       p2 = dataframe::utils::get<double>(params, "p2", 0.0);
 
+      beta = dataframe::utils::get<double>(params, "beta", 1.0);
+
       coupling_type = dataframe::utils::get<int>(params, "coupling_type");
 
-      do_measurements = dataframe::utils::get<int>(params, "do_measurement", 0);
+      do_measurements = dataframe::utils::get<int>(params, "do_measurements", 0);
+
+      init_fermion_state(true);
 
       std::string initial_state = dataframe::utils::get<std::string>(params, "initial_state");
       if (initial_state == "single_particle") {
-        single_particle();
+        state->single_particle();
       } else if (initial_state == "all_particles") {
-        all_particles();
+        state->all_particles();
       } else if (initial_state == "checkerboard") {
-        checkerboard_particles();
+        state->checkerboard_particles();
       }
     }
 
@@ -83,16 +86,11 @@ class ChainSimulator : public FreeFermionSimulator {
         H = random_coupling();
       }
 
-      std::cout << fmt::format("Orthogonal: {}\n", check_orthogonality());
-
-      Eigen::MatrixXcd A = Eigen::MatrixXcd::Zero(L, L);
-
-      evolve(A, H);
-      std::cout << fmt::format("num particles: {}\n", num_particles());
+      state->evolve(H);
 
       if (do_measurements) {
         H = measurement_coupling();
-        weak_measurement(A, H);
+        state->weak_measurement(H, beta);
       }
     }
 };

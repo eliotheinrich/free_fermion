@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(free_fermions LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS "-pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g") 
@@ -105,5 +105,5 @@ if (BUILDING_PYFERMION)
     )
 else()
     add_executable(test src/test.cpp)
-    target_link_libraries(test PUBLIC fmt::fmt simulator_display)
+    target_link_libraries(test PUBLIC fmt::fmt simulator_display dataframe)
 endif()
